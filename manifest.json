@@ -1,0 +1,31 @@
+{
+  "name": "Awesome GMarks Widget [ANTP]",
+  "version": "0.1",
+  "description": "Awesome GMarks widget for Awesome New Tab Page. Use your Google Bookmarks. [ANTP]",
+  
+  "manifest_version": 2,
+  
+  "icons": {
+    "128": "i128.png"
+  },  
+  
+  "background": {
+    "scripts": [
+      "jquery.min.js",
+      "common-gmarks.js",
+      "background.js"
+    ]   
+  },
+  
+  "content_security_policy": "script-src 'self' https://ajax.googleapis.com/ajax/services/feed/load; connect-src https://www.google.com/bookmarks/; object-src 'self'",
+  "web_accessible_resources": [
+    "widget-gmarks.html",
+    "bootstrap.min.css",
+    "widget-gmarks.js",
+    "common-gmarks.js",
+    "jquery.min.js"
+  ],
+
+  "permissions": [ "*://*/"]  
+  
+}
