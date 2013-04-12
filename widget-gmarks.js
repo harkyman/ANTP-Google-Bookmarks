@@ -33,8 +33,9 @@ function clearDisplay(){
 function adjustScroll() {
     var totalWidgetHeight = $("body").height();
     var headerHeight = $("#widget-rss-header").outerHeight();
-    console.log(totalWidgetHeight, headerHeight);
     $("#widget-rss-feed-container").outerHeight(totalWidgetHeight - headerHeight);
+    var columns = Math.max(Math.floor($("body").outerWidth()/190),1);
+    $("#widget-rss-feed-container-interior")[0].style.webkitColumnCount = columns;
 }
 
 //Simply display the RSS
@@ -74,6 +75,7 @@ function display(){
 $(document).ready(function() {
  // Initial setup of the widget
     display();
+    
      $(window).bind("storage", function (e) {
         if(e.originalEvent.key === "bookmarks") {
           display();
