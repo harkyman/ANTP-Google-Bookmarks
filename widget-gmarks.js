@@ -46,7 +46,7 @@ function display(){
         if (feed.error === undefined) {
             clearDisplay();
             $.each(feed, function(index, entry){
-              $('#widget-rss-feed-container-interior').append('<div class="row-fluid"><div class="span1 prepended-arrow-container"></div><div class="span11 entry-container"><a href="{0}" target="_blank" >{1}</a></div></div>'.format(entry.url, entry.title));
+              $('#widget-rss-feed-container-interior').append('<div class="row-fluid"><div class="span11 entry-container"><a href="{0}" target="_blank" >{1}</a></div><div class="delete-control"></div></div>'.format(entry.url, entry.title));
             });
             adjustScroll();
         } else { 
