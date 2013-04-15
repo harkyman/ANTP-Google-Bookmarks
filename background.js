@@ -68,33 +68,48 @@ var instance = localStorage.getItem("bookmarks");
 
 if (instance === null) {
     instance = $().extend({}, DEFAULT_RSS_INSTANCE);
-    localStorage.setItem("bookmarks", JSON.stringify(DEFAULT_RSS_INSTANCE));
+    instance.lastUpdate = 0;
+    localStorage.setItem("bookmarks", JSON.stringify(instance));
+    retrieveLatestBookmarks();
 } else {
     instance = JSON.parse(instance);
+    var rightNow = (new Date()).getTime();
+    if (rightNow - instance.lastUpdate < (1000 * 60 * 15)) { // only call for a network update every 15 minutes
+        retrieveLatestBookmarks();
+    };
 };
 
-var rssQueryUrl = 'https://www.google.com/bookmarks/?output=xml&num=1000';
-$.ajax({
-  url: rssQueryUrl,
-  dataType: 'xml',
-  success: function(data) {
-    var bookmarkArray = [];
-    $(data).find("bookmark").each(function() {
-        var thisTitle = $(this).find("title").text();
-        var thisLink = $(this).find("url").text();
-        bookmarkArray.push({"title": thisTitle, "url": thisLink});
-        });
-        bookmarkArray = bookmarkArray.sort(function(a,b) { if (a.title < b.title) { return -1;} else {return 1;} });
-        instance.feed = bookmarkArray;
-        localStorage.setItem("bookmarks", JSON.stringify(instance));
-      }
-  });
+function retrieveLatestBookmarks() {
+    $.ajax({
+        url: 'https://www.google.com/bookmarks/?output=xml&num=1000',
+        dataType: 'xml',
+        success: function(data) {
+            var bookmarkArray = [];
+            $(data).find("bookmark").each(function() {
+                var thisTitle = $(this).find("title").text();
+                var thisLink = $(this).find("url").text();
+                bookmarkArray.push({"title": thisTitle, "url": thisLink});
+                });
+                bookmarkArray = bookmarkArray.sort(function(a,b) { if (a.title < b.title) { return -1;} else {return 1;} });
+                instance.feed = bookmarkArray;
+                instance.lastUpdate = (new Date()).getTime();
+                localStorage.setItem("bookmarks", JSON.stringify(instance));
+          },
+          error: function() {
+              instance.lastUpdate = (new Date()).getTime();
+              instance.feed = {"error": "Google Bookmarks are unavailable. You must already be logged in to your Google account in this browser to retrieve them."};
+              localStorage.setItem("bookmarks", JSON.stringify(instance));
+          }
+    });
+};
 
 // give the current localStorage back to the main script
 chrome.extension.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.type = "pleaseupdate") {
-            sendResponse(JSON.parse(localStorage.bookmarks));
+            retrieveLatestBookmarks();
         };
     }
 );
+
+setInterval(retrieveLatestBookmarks, (1000 * 60 * 15));

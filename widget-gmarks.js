@@ -26,7 +26,6 @@
 
 //Clear the HTML outputs to prevent some UI errors
 function clearDisplay(){
-  $("#widget-rss-header").html(''); //Reset the header
   $("#widget-rss-feed-container-interior").html(''); //Reset the feeds
 }
 
@@ -40,41 +39,37 @@ function adjustScroll() {
 
 //Simply display the RSS
 function display(){
-    chrome.extension.sendMessage("pleaseupdate",
-        function(response) {
-            feed = response.feed;
-            //Display each entry title & link
+    response = localStorage.getItem("bookmarks");
+    if (response !== null) {
+        feed = JSON.parse(response).feed;
+        console.log(JSON.parse(response));
+        if (feed.error === undefined) {
             clearDisplay();
-            $("#widget-rss-header").html(' \
-            <div class="well well-small header-container header-grey"> \
-              <h4>Google Bookmarks</h4>');
             $.each(feed, function(index, entry){
-              $('#widget-rss-feed-container-interior').append(' \
-                <div class="row-fluid"> \
-                  <div class="span1 prepended-arrow-container"><i class="icon-chevron-right"></i></div> \
-                  <div class="span11 entry-container"><a href="{0}" target="_blank" >{1}</a></div> \
-                </div>'.format(entry.url, entry.title));
+              $('#widget-rss-feed-container-interior').append('<div class="row-fluid"><div class="span1 prepended-arrow-container"></div><div class="span11 entry-container"><a href="{0}" target="_blank" >{1}</a></div></div>'.format(entry.url, entry.title));
             });
             adjustScroll();
-        }
-    );         
-    $("#widget-rss-header").html(' \
-        <div class="well well-small header-container header-grey"> \
-          <h4>Google Bookmarks</h4>');
-      $('#widget-rss-feed-container-interior').html(' \
-            <div> \
-              Google Bookmarks are unavailable. You must already be logged in to your Google account in this browser to retrieve them.\
-            </div>');
-  }; 
+        } else { 
+            $('#widget-rss-feed-container-interior').html('<div> Google Bookmarks are unavailable. You must already be logged in to your Google account in this browser to retrieve them.</div>'); 
+        };
+    } else {
+        $('#widget-rss-feed-container-interior').html('<div> Google Bookmarks are unavailable. You must already be logged in to your Google account in this browser to retrieve them.</div>'); 
+    };
+};
 
 /* -------------------------------------- */
-/*                 Main                   */
+/*                 Main                         */
 /* -------------------------------------- */
 
 //Event handling
 $(document).ready(function() {
  // Initial setup of the widget
+    $("#widget-rss-header").html('<div class="well well-small header-container header-grey"><h4>Google Bookmarks</h4><span class="refresh-icon"></span>');
     display();
+    
+    $(".refresh-icon").bind("click", function(e) {
+        chrome.extension.sendMessage("pleaseupdate");
+    });
     
      $(window).bind("storage", function (e) {
         if(e.originalEvent.key === "bookmarks") {
